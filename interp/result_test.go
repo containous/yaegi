@@ -10,7 +10,6 @@ import (
 
 type resultTestCase struct {
 	desc, src string
-	skip      string
 	res       interface{}
 }
 
