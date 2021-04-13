@@ -539,7 +539,33 @@ func (interp *Interpreter) eval(src, name string, inc bool) (res reflect.Value, 
 		return res, err
 	}
 
-	if root.kind != fileStmt {
+	if root.kind == fileStmt {
+		res := new(FileResult)
+		root.val = res
+
+		root.Walk(func(n *node) bool {
+			var sres FileStatementResult
+			switch n.kind {
+			case importSpec:
+				if len(n.child) == 2 {
+					sres = &PackageImportResult{
+						Name: n.child[0].ident,
+						Path: constToString(n.child[1].rval),
+					}
+				} else {
+					sres = &PackageImportResult{Path: constToString(n.child[0].rval)}
+				}
+			case funcDecl:
+				sres = &FunctionDeclarationResult{Name: n.child[1].ident}
+			case typeSpec:
+				sres = &TypeDeclarationResult{Name: n.child[0].ident}
+			}
+			if sres != nil {
+				res.Statements = append(res.Statements, sres)
+			}
+			return true
+		}, nil)
+	} else {
 		// REPL may skip package statement.
 		setExec(root.start)
 	}
