@@ -132,7 +132,7 @@ type opt struct {
 	stdout   io.Writer     // standard output
 	stderr   io.Writer     // standard error
 
-	supressAssignmentResult bool
+	suppressAssignmentResult bool
 }
 
 // Interpreter contains global resources and state.
@@ -247,7 +247,7 @@ type Options struct {
 	Stdin          io.Reader
 	Stdout, Stderr io.Writer
 
-	SupressAssignmentResult bool
+	SuppressAssignmentResult bool
 }
 
 // New returns a new interpreter.
@@ -299,7 +299,7 @@ func New(options Options) *Interpreter {
 	// fastChan disables the cancellable version of channel operations in evalWithContext
 	i.opt.fastChan, _ = strconv.ParseBool(os.Getenv("YAEGI_FAST_CHAN"))
 
-	i.opt.supressAssignmentResult = options.SupressAssignmentResult
+	i.opt.suppressAssignmentResult = options.SuppressAssignmentResult
 	return &i
 }
 
@@ -596,7 +596,7 @@ func (interp *Interpreter) eval(src, name string, inc bool) (res reflect.Value, 
 		interp.run(n, interp.frame)
 	}
 
-	if interp.supressAssignmentResult {
+	if interp.suppressAssignmentResult {
 		n := root
 		for n.kind == blockStmt || n.kind == declStmt {
 			n = n.lastChild()

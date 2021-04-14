@@ -1491,8 +1491,8 @@ func TestREPLDivision(t *testing.T) {
 	}
 }
 
-func TestEvalSupressAssignmentResult(t *testing.T) {
-	i := interp.New(interp.Options{SupressAssignmentResult: true})
+func TestEvalSuppressAssignmentResult(t *testing.T) {
+	i := interp.New(interp.Options{SuppressAssignmentResult: true})
 	runTests(t, i, []testCase{
 		{desc: "define", src: "a := 1", res: "{}"},
 		{desc: "define multiple", src: "a, b := 1, 2", res: "{}"},
