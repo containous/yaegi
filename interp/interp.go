@@ -135,6 +135,8 @@ type opt struct {
 	stdin    io.Reader     // standard input
 	stdout   io.Writer     // standard output
 	stderr   io.Writer     // standard error
+
+	suppressAssignmentResult bool
 }
 
 // Interpreter contains global resources and state.
@@ -251,6 +253,8 @@ type Options struct {
 	// They default to os.Stding, os.Stdout and os.Stderr respectively.
 	Stdin          io.Reader
 	Stdout, Stderr io.Writer
+
+	SuppressAssignmentResult bool
 }
 
 // New returns a new interpreter.
@@ -301,6 +305,8 @@ func New(options Options) *Interpreter {
 
 	// fastChan disables the cancellable version of channel operations in evalWithContext
 	i.opt.fastChan, _ = strconv.ParseBool(os.Getenv("YAEGI_FAST_CHAN"))
+
+	i.opt.suppressAssignmentResult = options.SuppressAssignmentResult
 	return &i
 }
 
@@ -482,6 +488,13 @@ func isFile(path string) bool {
 	return err == nil && fi.Mode().IsRegular()
 }
 
+// EmptyResult is the result of statements that have no result.
+var EmptyResult emptyResult
+
+type emptyResult struct{}
+
+func (emptyResult) IsNone() bool { return false }
+
 func (interp *Interpreter) eval(src, name string, inc bool) (res reflect.Value, err error) {
 	if name != "" {
 		interp.name = name
@@ -589,6 +602,18 @@ func (interp *Interpreter) eval(src, name string, inc bool) (res reflect.Value, 
 	for _, n := range initNodes {
 		interp.run(n, interp.frame)
 	}
+
+	if interp.suppressAssignmentResult {
+		n := root
+		for n.kind == blockStmt || n.kind == declStmt {
+			n = n.lastChild()
+		}
+		switch n.kind {
+		case defineStmt, assignStmt, varDecl:
+			return reflect.ValueOf(EmptyResult), err
+		}
+	}
+
 	v := genValue(root)
 	res = v(interp.frame)
 

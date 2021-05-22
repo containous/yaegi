@@ -1491,3 +1491,15 @@ func TestREPLCommands(t *testing.T) {
 		t.Fatal("timeout")
 	}
 }
+
+func TestEvalSuppressAssignmentResult(t *testing.T) {
+	i := interp.New(interp.Options{SuppressAssignmentResult: true})
+	runTests(t, i, []testCase{
+		{desc: "define", src: "a := 1", res: "{}"},
+		{desc: "define multiple", src: "a, b := 1, 2", res: "{}"},
+		{desc: "assign", src: "a = 2", res: "{}"},
+		{desc: "assign multiple", src: "a, b = 2, 3", res: "{}"},
+		{desc: "declare", src: `var c = 1.2`, skip: "can't test for new(interface{})"},
+		{desc: "declare after code", src: `_ = ""; var d = 1.2`, res: "{}"},
+	})
+}
