@@ -1,9 +1,9 @@
 package interp_test
 
 import (
+	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
 )
@@ -41,9 +41,15 @@ func runResultTests(t *testing.T, i *interp.Interpreter, tests []resultTestCase)
 
 		t.Run(test.desc, func(t *testing.T) {
 			res, err := i.Eval(test.src)
-			require.NoError(t, err)
-			require.True(t, res.IsValid())
-			require.Equal(t, expected, res.Interface())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !res.IsValid() {
+				t.Fatal("Result is not valid")
+			}
+			if !reflect.DeepEqual(expected, res.Interface()) {
+				t.Fatalf("Got %v, expected %v", res, expected)
+			}
 		})
 	}
 }
