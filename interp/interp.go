@@ -493,6 +493,9 @@ func getFileResult(n *node) *FileResult {
 	n.Walk(func(n *node) bool {
 		var sres FileStatementResult
 		switch n.kind {
+		case fileStmt, importDecl, typeDecl:
+			return true
+
 		case importSpec:
 			if len(n.child) == 2 {
 				sres = &PackageImportResult{
@@ -506,11 +509,13 @@ func getFileResult(n *node) *FileResult {
 			sres = &FunctionDeclarationResult{Name: n.child[1].ident}
 		case typeSpec:
 			sres = &TypeDeclarationResult{Name: n.child[0].ident}
+		default:
+			return false
 		}
 		if sres != nil {
 			res.Statements = append(res.Statements, sres)
 		}
-		return true
+		return false
 	}, nil)
 
 	return res
