@@ -14,16 +14,21 @@ type resultTestCase struct {
 }
 
 func TestEvalFileResult(t *testing.T) {
+	type Results = []interp.FileStatementResult
+	type Import = interp.PackageImportResult
+	type Func = interp.FunctionDeclarationResult
+	type Type = interp.TypeDeclarationResult
+
 	i := interp.New(interp.Options{})
 	i.Use(stdlib.Symbols)
 	runResultTests(t, i, []resultTestCase{
-		{desc: "bare import", src: `import "time"`, res: &interp.PackageImportResult{Path: "time"}},
-		{desc: "named import", src: `import x "time"`, res: &interp.PackageImportResult{Name: "x", Path: "time"}},
-		{desc: "multiple imports", src: "import (\ny \"time\"\nz \"fmt\"\n)", res: []interp.FileStatementResult{&interp.PackageImportResult{Name: "y", Path: "time"}, &interp.PackageImportResult{Name: "z", Path: "fmt"}}},
+		{desc: "bare import", src: `import "time"`, res: &Import{Path: "time"}},
+		{desc: "named import", src: `import x "time"`, res: &Import{Name: "x", Path: "time"}},
+		{desc: "multiple imports", src: "import (\ny \"time\"\nz \"fmt\"\n)", res: Results{&Import{Name: "y", Path: "time"}, &Import{Name: "z", Path: "fmt"}}},
 
-		{desc: "func", src: `func foo() {}`, res: &interp.FunctionDeclarationResult{Name: "foo"}},
+		{desc: "func", src: `func foo() { }`, res: &Func{Name: "foo"}},
 
-		{desc: "struct type", src: `type Foo struct {}`, res: &interp.TypeDeclarationResult{Name: "Foo"}},
+		{desc: "struct type", src: `type Foo struct {}`, res: &Type{Name: "Foo"}},
 	})
 }
 
